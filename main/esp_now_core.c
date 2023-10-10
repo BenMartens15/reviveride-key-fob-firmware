@@ -10,6 +10,8 @@
 /******************************************************************************/
 
 /* DEFINES ********************************************************************/
+#define TAG "ESP_NOW_CORE"
+#define ESP_NOW_CORE_LOG_LEVEL ESP_LOG_INFO 
 /******************************************************************************/
 
 /* ENUMS **********************************************************************/
@@ -19,8 +21,6 @@
 /******************************************************************************/
 
 /* GLOBALS ********************************************************************/
-static const char *TAG = "ESP_NOW_CORE";
-
 static EventGroupHandle_t m_evt_group;
 /******************************************************************************/
 
@@ -31,6 +31,8 @@ static void packet_sent_cb(const uint8_t *mac_addr, esp_now_send_status_t status
 /* PUBLIC FUNCTIONS ***********************************************************/
 void esp_now_core_init(void)
 {
+    esp_log_level_set(TAG, ESP_NOW_CORE_LOG_LEVEL);
+
     esp_err_t err = ESP_OK;
     const wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
 

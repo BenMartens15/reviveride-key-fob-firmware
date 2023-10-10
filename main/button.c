@@ -9,9 +9,13 @@
 #include "freertos/semphr.h"
 #include "freertos/task.h"
 #include "freertos/timers.h"
+#include "led.h"
 /******************************************************************************/
 
 /* DEFINES ********************************************************************/
+#define TAG "BUTTON"
+#define BUTTON_LOG_LEVEL ESP_LOG_INFO 
+
 #define ESP_INTR_FLAG_DEFAULT 0
 
 #define BUTTON_PIN 27
@@ -29,8 +33,6 @@
 /******************************************************************************/
 
 /* GLOBALS ********************************************************************/
-static const char *TAG = "BUTTON";
-
 static SemaphoreHandle_t button_semaphore = NULL;
 static TimerHandle_t button_timer = NULL;
 
@@ -50,6 +52,8 @@ static void IRAM_ATTR button_isr_handler(void* arg)
 
 void button_init(void)
 {
+    esp_log_level_set(TAG, BUTTON_LOG_LEVEL);
+
     gpio_config_t pin_config = {
         .pin_bit_mask = BUTTON_PIN_MASK,
         .mode = GPIO_MODE_INPUT,
@@ -112,5 +116,13 @@ static void toggleEngineState(TimerHandle_t xTimer)
         .start_stop_command = engine_state
     };
     esp_now_core_send_data(send_data);
+
+    // flash the LED 3 times to show that the car has turned on or off
+    for (int i = 0; i < 3; i++) {
+        led_on();
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        led_off();
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
 }
 /******************************************************************************/
