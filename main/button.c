@@ -4,9 +4,11 @@
 #include "driver/gpio.h"
 #include "esp_log.h"
 #include "esp_now_core.h"
+#include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include "freertos/semphr.h"
+#include "freertos/task.h"
+#include "freertos/timers.h"
 /******************************************************************************/
 
 /* DEFINES ********************************************************************/
@@ -15,6 +17,9 @@
 #define BUTTON_PIN 27
 #define BUTTON_PIN_MASK (1 << BUTTON_PIN)
 #define BUTTON_DEBOUNCE_MS 80
+
+#define TIMER_DIVIDER 16
+#define TIMER_SCALE (TIMER_BASE_CLK / TIMER_DIVIDER)  // convert counter value to seconds
 /******************************************************************************/
 
 /* ENUMS **********************************************************************/
@@ -27,12 +32,14 @@
 static const char *TAG = "BUTTON";
 
 static SemaphoreHandle_t button_semaphore = NULL;
+static TimerHandle_t button_timer = NULL;
 
 static engine_state_e engine_state = OFF;
 /******************************************************************************/
 
 /* PROTOTYPES *****************************************************************/
 static void button_task(void* arg);
+static void toggleEngineState(TimerHandle_t xTimer);
 /******************************************************************************/
 
 /* PUBLIC FUNCTIONS ***********************************************************/
@@ -47,13 +54,21 @@ void button_init(void)
         .pin_bit_mask = BUTTON_PIN_MASK,
         .mode = GPIO_MODE_INPUT,
         .pull_up_en = 1,
-        .intr_type = GPIO_INTR_NEGEDGE
+        .intr_type = GPIO_INTR_ANYEDGE
     };
 
     gpio_config(&pin_config);
 
     button_semaphore = xSemaphoreCreateBinary();
     xTaskCreate(button_task, "button_task", 2048, NULL, 10, NULL);
+
+    // the purpose of the button time is to turn the car on or off as soon as the button is held for more than 2 seconds
+    button_timer = xTimerCreate("button_hold_timer",
+                    pdMS_TO_TICKS(2000),
+                    pdFALSE,
+                    (void*)0,
+                    toggleEngineState);
+    // add a check for if button_timer is NULL
 
     gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
     gpio_isr_handler_add(BUTTON_PIN, button_isr_handler, NULL);
@@ -80,15 +95,22 @@ static void button_task(void* arg)
             }
         }
 
-        if ((button_history & 0b0000000000001111) == 0b0000000000000000) { // checking the last 4 values in the button history
+        if ((button_history & 0b0000000000001111) == 0b0000000000000000) {
             ESP_LOGI(TAG, "Button pressed");
-
-            engine_state = engine_state ^ 1; // toggle the engine state
-            send_data_t send_data = {
-                .start_stop_command = engine_state
-            };
-            esp_now_core_send_data(send_data);
+            xTimerStart(button_timer, 0); // start the 2 second button timer
+        } else if ((button_history & 0b0000000000001111) == 0b0000000000001111) {
+            ESP_LOGI(TAG, "Button released");
+            xTimerStop(button_timer, 0);
         }
     }
+}
+
+static void toggleEngineState(TimerHandle_t xTimer)
+{
+    engine_state = engine_state ^ 1;
+    send_data_t send_data = {
+        .start_stop_command = engine_state
+    };
+    esp_now_core_send_data(send_data);
 }
 /******************************************************************************/
