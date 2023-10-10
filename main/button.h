@@ -1,35 +1,28 @@
 
-#ifndef ESP_NOW_H
-#define ESP_NOW_H
+#ifndef BUTTON_H
+#define BUTTON_H
 
 /* INCLUDES *******************************************************************/
-#include <stdbool.h>
-#include "button.h"
-#include "esp_err.h"
 /******************************************************************************/
 
 /* DEFINES ********************************************************************/
-#define ESPNOW_PMK "pmk1234567890123"
-#define ESPNOW_CHANNEL 1
-
-#define RECEIVER_MAC {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF} // change to the MAC address of the receiving device
 /******************************************************************************/
 
 /* ENUMS **********************************************************************/
+typedef enum {
+    RUNNING,
+    OFF
+} engine_state_e;
 /******************************************************************************/
 
 /* STRUCTURES *****************************************************************/
-typedef struct {
-    engine_state_e start_stop_command;
-} send_data_t;
 /******************************************************************************/
 
 /* GLOBALS ********************************************************************/
 /******************************************************************************/
 
 /* PROTOTYPES *****************************************************************/
-void esp_now_core_init(void);
-esp_err_t esp_now_core_send_data(send_data_t data);
+void button_init(void);
 /******************************************************************************/
 
-#endif /* #ifndef ESP_NOW_H */
+#endif /* #ifndef BUTTON_H */
