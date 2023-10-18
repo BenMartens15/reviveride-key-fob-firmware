@@ -12,7 +12,7 @@
 #define ESPNOW_PMK "pmk1234567890123"
 #define ESPNOW_CHANNEL 1
 
-#define RECEIVER_MAC {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF} // change to the MAC address of the receiving device
+#define RECEIVER_MAC {0x3C, 0x71, 0xBF, 0xFB, 0xDD, 0x80} // change to the MAC address of the receiving device
 /******************************************************************************/
 
 /* ENUMS **********************************************************************/

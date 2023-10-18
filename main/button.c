@@ -38,7 +38,7 @@
 static SemaphoreHandle_t button_semaphore = NULL;
 static TimerHandle_t button_timer = NULL;
 
-static engine_state_e engine_state = OFF;
+static RTC_DATA_ATTR engine_state_e engine_state = OFF;
 /******************************************************************************/
 
 /* PROTOTYPES *****************************************************************/
@@ -132,16 +132,28 @@ static void toggleEngineState(TimerHandle_t xTimer)
     send_data_t send_data = {
         .start_stop_command = engine_state
     };
-    esp_now_core_send_data(send_data);
-
-    // flash the LED 3 times to show that the car has turned on or off
-    for (int i = 0; i < 3; i++) {
-        led_on();
-        vTaskDelay(pdMS_TO_TICKS(1000));
-        led_off();
-        vTaskDelay(pdMS_TO_TICKS(1000));
+    if (esp_now_core_send_data(send_data) == ESP_OK) {
+        // flash the LED twice to show that the car has turned on or off
+        for (int i = 0; i < 2; i++) {
+            led_on();
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            led_off();
+            vTaskDelay(pdMS_TO_TICKS(1000));
+        }
+        ESP_LOGI(TAG, "Going to sleep");
+        esp_deep_sleep_start(); // go back to sleep when finished turning the car on or off
+    } else {
+        // flash the LED quickly 3 times to show that the data wasn't sent successfully
+        for (int i = 0; i < 3; i++) {
+            led_on();
+            vTaskDelay(pdMS_TO_TICKS(300));
+            led_off();
+            vTaskDelay(pdMS_TO_TICKS(300));
+        }
+        engine_state = engine_state ^ 1; // revert the engine state back to what it was if the send fails
+        ESP_LOGI(TAG, "Going to sleep");
+        esp_deep_sleep_start(); // go back to sleep
     }
-    ESP_LOGI(TAG, "Going to sleep");
-    esp_deep_sleep_start(); // go back to sleep when finished turning the car on or off
+    
 }
 /******************************************************************************/
