@@ -12,7 +12,9 @@
 #define ESPNOW_PMK "pmk1234567890123"
 #define ESPNOW_CHANNEL 1
 
-#define RECEIVER_MAC {0x3C, 0x71, 0xBF, 0xFB, 0xDD, 0x80} // change to the MAC address of the receiving device
+#define TOGGLE_ENGINE_STATE_COMMAND 1
+
+#define RECEIVER_MAC {0xB8, 0xD6, 0x1A, 0xA7, 0xEA, 0xE0} // change to the MAC address of the receiving device
 /******************************************************************************/
 
 /* ENUMS **********************************************************************/
@@ -20,7 +22,7 @@
 
 /* STRUCTURES *****************************************************************/
 typedef struct {
-    engine_state_e start_stop_command;
+    int command;
 } send_data_t;
 /******************************************************************************/
 

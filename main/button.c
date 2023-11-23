@@ -37,13 +37,11 @@
 /* GLOBALS ********************************************************************/
 static SemaphoreHandle_t button_semaphore = NULL;
 static TimerHandle_t button_timer = NULL;
-
-static RTC_DATA_ATTR engine_state_e engine_state = OFF;
 /******************************************************************************/
 
 /* PROTOTYPES *****************************************************************/
 static void button_task(void* arg);
-static void toggleEngineState(TimerHandle_t xTimer);
+static void toggle_engine_state(TimerHandle_t xTimer);
 /******************************************************************************/
 
 /* PUBLIC FUNCTIONS ***********************************************************/
@@ -80,7 +78,7 @@ void button_init(void)
                         pdMS_TO_TICKS(1000),
                         pdFALSE,
                         (void*)0,
-                        toggleEngineState);
+                        toggle_engine_state);
         // add a check for if button_timer is NULL
         xTimerStart(button_timer, 0); // start the 2 second button timer
 
@@ -123,16 +121,16 @@ static void button_task(void* arg)
     }
 }
 
-static void toggleEngineState(TimerHandle_t xTimer)
+static void toggle_engine_state(TimerHandle_t xTimer)
 {
     ESP_LOGI(TAG, "Button held for 1 second");
     gpio_intr_disable(BUTTON_PIN); // disable interrupts on the button pin
 
-    engine_state = engine_state ^ 1;
     send_data_t send_data = {
-        .start_stop_command = engine_state
+        .command = TOGGLE_ENGINE_STATE_COMMAND
     };
     if (esp_now_core_send_data(send_data) == ESP_OK) {
+        ESP_LOGI(TAG, "Engine state toggled");
         // flash the LED twice to show that the car has turned on or off
         for (int i = 0; i < 2; i++) {
             led_on();
@@ -143,6 +141,7 @@ static void toggleEngineState(TimerHandle_t xTimer)
         ESP_LOGI(TAG, "Going to sleep");
         esp_deep_sleep_start(); // go back to sleep when finished turning the car on or off
     } else {
+        ESP_LOGI(TAG, "Failed to toggle engine state");
         // flash the LED quickly 3 times to show that the data wasn't sent successfully
         for (int i = 0; i < 3; i++) {
             led_on();
@@ -150,10 +149,9 @@ static void toggleEngineState(TimerHandle_t xTimer)
             led_off();
             vTaskDelay(pdMS_TO_TICKS(300));
         }
-        engine_state = engine_state ^ 1; // revert the engine state back to what it was if the send fails
         ESP_LOGI(TAG, "Going to sleep");
         esp_deep_sleep_start(); // go back to sleep
     }
-    
+
 }
 /******************************************************************************/
