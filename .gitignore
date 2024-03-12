@@ -67,7 +67,6 @@ dkms.conf
 .DS_Store
 
 # Application project files
-**/sdkconfig
 **/sdkconfig.old
 **/build
 **/*.bin
