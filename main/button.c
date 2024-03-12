@@ -20,7 +20,7 @@
 
 #define ESP_INTR_FLAG_DEFAULT 0
 
-#define BUTTON_PIN 15
+#define BUTTON_PIN 17
 #define BUTTON_PIN_MASK (1 << BUTTON_PIN)
 #define BUTTON_DEBOUNCE_MS 80
 

@@ -14,7 +14,7 @@
 
 #define TOGGLE_ENGINE_STATE_COMMAND 1
 
-#define RECEIVER_MAC {0xB8, 0xD6, 0x1A, 0xA7, 0xEA, 0xE0} // change to the MAC address of the receiving device
+#define RECEIVER_MAC {0x30, 0x30, 0xF9, 0x2A, 0x26, 0xEC} // change to the MAC address of the receiving device
 /******************************************************************************/
 
 /* ENUMS **********************************************************************/
