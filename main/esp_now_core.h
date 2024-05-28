@@ -9,9 +9,10 @@
 /******************************************************************************/
 
 /* DEFINES ********************************************************************/
-#define ESPNOW_PMK "pmk1234567890123"
+#define ESPNOW_PMK "g#NX9gxErkNFdEfd"
 #define ESPNOW_CHANNEL 1
 
+// command defines - add new commands here
 #define TOGGLE_ENGINE_STATE_COMMAND 1
 
 #define RECEIVER_MAC {0x30, 0x30, 0xF9, 0x2A, 0x26, 0xEC} // change to the MAC address of the receiving device
@@ -22,7 +23,7 @@
 
 /* STRUCTURES *****************************************************************/
 typedef struct {
-    int command;
+    uint8_t command;
 } send_data_t;
 /******************************************************************************/
 
